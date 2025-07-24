@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Iara Widget Integration</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: sans-serif;
+      }
+      #iframe-iara {
+        width: 100%;
+        height: calc(100vh - 120px);
+        border: none;
+      }
+      .config-container {
+        padding: 12px;
+        background-color: #f5f5f5;
+        border-bottom: 1px solid #ccc;
+      }
+      .config-container input {
+        padding: 6px;
+        margin-right: 10px;
+        width: 300px;
+      }
+      .config-container button {
+        padding: 6px 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="config-container">
+      <input type="email" id="email" placeholder="Seu e-mail" />
+      <input type="text" id="token" placeholder="Token de API" />
+      <button onclick="iniciarIara()">Iniciar</button>
+    </div>
+
+    <iframe id="iframe-iara" src="https://widget.iarahealth.com"></iframe>
+
+    <script>
+      const IARA_URL = "https://widget.iarahealth.com";
+
+      function iniciarIara() {
+        const email = document.getElementById("email").value;
+        const token = document.getElementById("token").value;
+        const iframe = document.getElementById("iframe-iara");
+
+        iframe.contentWindow.postMessage(
+          {
+            id: "IaraInit",
+            speechParams: {
+              apiToken: token,
+              userId: email,
+            },
+            editorConfig: {
+              layoutType: "Continuous",
+              assistant: {
+                draggable: {
+                  containerId:
+                    "#iara-syncfusion-editor-container_editor_viewerContainer",
+                  defaultPosition: { x: 30, y: 20 },
+                },
+              },
+              font: {
+                availableFamilies: ["Arial", "Times New Roman", "Calibri"],
+                availableSizes: [10, 12, 14, 18],
+                family: "Times New Roman",
+                size: 12,
+              },
+              ribbon: {
+                displayMode: "Simplified",
+              },
+              lineSpacing: 1.5,
+              paragraphSpacing: {
+                before: 8,
+                after: 12,
+              },
+              forceTypographyStyles: true,
+            },
+            templates: [
+              {
+                speechCommand: "coluna",
+                content: "<div>teste coluna</div>",
+                name: "Tomografia de Coluna",
+              },
+            ],
+          },
+          IARA_URL
+        );
+
+        iframe.contentWindow.postMessage(
+          {
+            id: "IaraLoadReport",
+            content: "<div>Bem-vindo ao Iara!</div>",
+          },
+          IARA_URL
+        );
+      }
+
+      window.onmessage = (event) => {
+        if (event.origin !== IARA_URL) return;
+
+        if (event.data.id === "IaraOnWidgetLoaded") {
+          console.log("Widget carregado!");
+        } else if (event.data.id === "IaraOnChangeReport") {
+          console.log("Alteração detectada:", event.data);
+        } else if (event.data.id === "IaraOnFinishReport") {
+          console.log("Laudo finalizado:", event.data);
+        }
+      };
+    </script>
+  </body>
+</html>
